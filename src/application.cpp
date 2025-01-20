@@ -3,13 +3,17 @@
 
 namespace ENV_GEN {
     
-    Application::Application( const std::string & title , const uint width, const uint height) :
+    Application::Application( const std::string & title, const uint width, const uint height) :
         _title(title), _width(width), _height(height) {
             
         _initGLFW();
         _initWindows();
 
         glfwMakeContextCurrent(_window);
+
+        _initGLEW();
+
+        _renderer.init();
 
         std::cout << "Application initialized." << std::endl;
     }
@@ -22,7 +26,7 @@ namespace ENV_GEN {
         glfwDestroyWindow(_window);
 
         std::cout << "Application stoped." << std::endl;
-
+        
     }
 
     uint Application::run() {
@@ -40,7 +44,7 @@ namespace ENV_GEN {
             //A.animate(deltaTime);
 
             // Rendu 
-            glClear(GL_COLOR_BUFFER_BIT);
+            _renderer.render();
 
             glfwSwapBuffers(_window);
             glfwPollEvents();
@@ -68,5 +72,13 @@ namespace ENV_GEN {
         std::cout << "Initializing GLFW." << std::endl;
 
         if (!glfwInit()) error(GLFW_ERROR);
+    }
+
+    void Application::_initGLEW() {
+
+        std::cout << "Initializing GLEW" << std::endl;
+
+        if (glewInit() != GLEW_OK) error(GLEW_ERROR);
+
     }
 }

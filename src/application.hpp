@@ -5,6 +5,7 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include "utils/error.hpp"
+#include "render/renderer.hpp"
 
 namespace ENV_GEN {
     class Application {
@@ -18,6 +19,7 @@ namespace ENV_GEN {
         private:
             void _initGLFW();
             void _initWindows();
+            void _initGLEW();
 
         private:
 
@@ -28,6 +30,7 @@ namespace ENV_GEN {
 
             GLFWwindow* _window;
 
+            Renderer _renderer;
     };
 }
 

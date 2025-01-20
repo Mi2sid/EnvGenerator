@@ -7,12 +7,18 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 set(SRC_FILES
     src/application.cpp
+
+    src/render/renderer.cpp
 )
 
 set(HEADER_FILES
     src/application.hpp
     src/define.hpp
+
     src/utils/error.hpp
+    src/utils/readfile.hpp
+
+    src/render/renderer.hpp
 )
 
 add_executable(${PROJECT_NAME} src/main.cpp ${SRC_FILES} ${HEADER_FILES})

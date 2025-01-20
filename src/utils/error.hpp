@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <string>
 #include <map>
+#include <iostream>
 
 namespace ENV_GEN {
 
@@ -12,15 +13,21 @@ namespace ENV_GEN {
         const char* description;
     };
 
-    constexpr uint WINDOW_ERROR = 0;
-    constexpr uint GLFW_ERROR = 1;
+    constexpr unsigned int WINDOW_ERROR = 0;
+    constexpr unsigned int GLFW_ERROR = 1;
+    constexpr unsigned int GLEW_ERROR = 2;
+    constexpr unsigned int COMPILE_SHADER_ERROR = 3;
+    constexpr unsigned int LINK_PROGRAM_ERROR = 4;
 
-    inline const std::map<uint, ErrorInfo> ERROR_MAP = {
-        { WINDOW_ERROR,  {"0001", "Windows initialization failed."} },
-        { GLFW_ERROR,    {"0002", "GLFW initialization failed."} },
+    inline const std::map<unsigned int, ErrorInfo> ERROR_MAP = {
+        { WINDOW_ERROR,         {"0001", "Windows initialization failed."} },
+        { GLFW_ERROR,           {"0002", "GLFW initialization failed."} },
+        { GLEW_ERROR,           {"0003", "GLEW initialization failed."} },
+        { COMPILE_SHADER_ERROR, {"0004", "Compiling shader failed."} },
+        { LINK_PROGRAM_ERROR,   {"0005", "Linking program failed."} },
     };
 
-    inline void error(int code) {
+inline void error(int code, const std::string& log = "") {
 
         auto it = ERROR_MAP.find(code);
         if (it == ERROR_MAP.end()) {
@@ -28,9 +35,14 @@ namespace ENV_GEN {
         }
 
         const ErrorInfo& errorInfo = it->second;
-        throw std::runtime_error(std::string("Error ") + errorInfo.code + ":\n\t" + errorInfo.description);
-    
+
+        std::string errorMessage = "Error " + std::string(errorInfo.code) + ":\n\t" + errorInfo.description;
+
+        if (!log.empty()) errorMessage += "\n\tAdditional info: " + log;
+        
+        throw std::runtime_error(errorMessage);
     }
+
 }
 
 #endif // __ERROR_HPP__
