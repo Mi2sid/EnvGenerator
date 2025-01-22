@@ -6,6 +6,8 @@
 #include <GLFW/glfw3.h>
 #include <vector>
 #include <string>
+#include <iostream>
+#include <cstdlib>
 
 #include "utils/error.hpp"
 #include "utils/readfile.hpp"
@@ -25,11 +27,17 @@ namespace ENV_GEN {
             const std::string _shaderFolder     = "data/shaders/";
             const glm::vec4 _backgroundColor    = glm::vec4(0.1f, 0.1f, 0.1f, 1.f);
 
-            std::vector<glm::vec2> _vertexPosition;
+            std::vector<glm::vec3>  _vertexPosition;
+            std::vector<glm::vec4>  _vertexColor;
+            std::vector<uint>       _vertexIndex;
+
 
             GLuint _idProgram   = GL_INVALID_INDEX;
             GLuint _vao         = GL_INVALID_INDEX;
-            GLuint _vbo         = GL_INVALID_INDEX;
+            GLuint _vbo_vertex  = GL_INVALID_INDEX;
+            GLuint _vbo_color   = GL_INVALID_INDEX;
+            GLuint _ebo         = GL_INVALID_INDEX;
+
     };
 }
 

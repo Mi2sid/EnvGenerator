@@ -4,12 +4,17 @@ namespace ENV_GEN {
 
     Renderer::~Renderer() {
 
-		glDeleteBuffers( 1, &_vbo );
+		glDeleteProgram(_idProgram);
+
+		glDeleteBuffers( 1, &_vbo_vertex );
+		glDeleteBuffers( 1, &_vbo_color );
 
 		glDisableVertexArrayAttrib( _vao, 0 );
+		glDisableVertexArrayAttrib( _vao, 1 );
+
 		glDeleteVertexArrays( 1, &_vao );
 
-        glDeleteProgram(_idProgram);
+		glDeleteBuffers(1, &_ebo);
     }
 
     void Renderer::init() {
@@ -73,31 +78,66 @@ namespace ENV_GEN {
 		glDeleteShader(vertexShader);
 		glDeleteShader(fragmentShader);
 
-        _vertexPosition = { { -0.5f, 0.5f }, { 0.5f, 0.5f }, { 0.f, -0.5f } };
+		_vertexPosition = { { 0.5f, 0.5f, 0.5f }, { 0.5f, -0.5f, 0.5f },
+							{ -0.5f, 0.5f, 0.5f }, { -0.5f, -0.5f, 0.5f }, 
+							{ 0.5f, 0.5f, -0.5f }, { 0.5f, -0.5f, -0.5f },
+							{ -0.5f, 0.5f, -0.5f }, { -0.5f, -0.5f, -0.5f } };
 
-		// vbo
-		glCreateBuffers( 1, &_vbo );
-		glNamedBufferData( _vbo, _vertexPosition.size() * sizeof( glm::vec2 ), _vertexPosition.data(), GL_STATIC_DRAW );
+		for ( int i = 0; i < _vertexPosition.size() ; i++ )
+			_vertexColor.push_back( glm::vec4( static_cast<float>(std::rand()) / RAND_MAX, static_cast<float>(std::rand()) / RAND_MAX, 1.f, 1.f ) );
+
+		_vertexIndex = {
+			3, 0, 1, 3, 0, 2, // z+
+			7, 4, 5, 7, 4, 6, // z-
+			1, 7, 3, 1, 7, 5, // y-
+			0, 6, 2, 0, 6, 4, // y+
+			0, 5, 1, 0, 5, 4, // x+
+			2, 7, 3, 2, 7, 6, // x-
+		};
+
+		glUseProgram( _idProgram );
 
 		// vao
 		glCreateVertexArrays( 1, &_vao);
 		glEnableVertexArrayAttrib( _vao, 0 );
-		glVertexArrayAttribFormat( _vao, 0, 2, GL_FLOAT, GL_FALSE, 0 );
+		glEnableVertexArrayAttrib( _vao, 1 );
+
+		// vbo
+		glCreateBuffers( 1, &_vbo_vertex );
+		glNamedBufferData( _vbo_vertex, _vertexPosition.size() * sizeof( glm::vec3 ), _vertexPosition.data(), GL_STATIC_DRAW );
 
 		// vao, vbo link
-		glVertexArrayVertexBuffer( _vao, 0, _vbo, 0, sizeof( glm::vec2 ) );
+		glVertexArrayVertexBuffer( _vao, 0, _vbo_vertex, 0, sizeof( glm::vec3 ) );
+		glVertexArrayAttribFormat( _vao, 0, 3, GL_FLOAT, GL_FALSE, 0 );
 		glVertexArrayAttribBinding( _vao, 0, 0 );
 
-		glUseProgram( _idProgram );
+		// vbo color
+		glCreateBuffers( 1, &_vbo_color );
+		glNamedBufferData( _vbo_color, _vertexColor.size() * sizeof( glm::vec4 ), _vertexColor.data(), GL_STATIC_DRAW );
+
+		// vao, vbo color link
+		glVertexArrayVertexBuffer( _vao, 1, _vbo_color, 0, sizeof( glm::vec4 ) );
+		glVertexArrayAttribFormat( _vao, 1, 4, GL_FLOAT, GL_FALSE, 0 );
+		glVertexArrayAttribBinding( _vao, 1, 1 );
+
+		// ebo
+		glCreateBuffers( 1, &_ebo );
+		glNamedBufferData( _ebo, _vertexIndex.size() * sizeof( uint ), _vertexIndex.data(), GL_STATIC_DRAW );
+
+		// link vao ebo
+		glVertexArrayElementBuffer( _vao, _ebo );
 
 		std::cout << "Renderer initilised!" << std::endl;
 
     }
 
     void Renderer::render() {
-        glClear( GL_COLOR_BUFFER_BIT );
+		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+		
 		glBindVertexArray( _vao );
-		glDrawArrays( GL_TRIANGLES, 0, _vertexPosition.size() );
+
+		glDrawElements( GL_TRIANGLES, (GLsizei) _vertexIndex.size(), GL_UNSIGNED_INT, 0 );
+		
 		glBindVertexArray( 0 );
     }
 }

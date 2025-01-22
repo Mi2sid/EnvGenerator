@@ -9,6 +9,7 @@ set(SRC_FILES
     src/application.cpp
 
     src/render/renderer.cpp
+    src/render/camera.cpp
 )
 
 set(HEADER_FILES
@@ -19,6 +20,7 @@ set(HEADER_FILES
     src/utils/readfile.hpp
 
     src/render/renderer.hpp
+    src/render/camera.hpp
 )
 
 add_executable(${PROJECT_NAME} src/main.cpp ${SRC_FILES} ${HEADER_FILES})
