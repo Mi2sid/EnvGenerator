@@ -8,9 +8,12 @@
 #include <string>
 #include <iostream>
 #include <cstdlib>
+#include <glm/gtc/type_ptr.hpp>
 
 #include "utils/error.hpp"
 #include "utils/readfile.hpp"
+#include "render/camera.hpp"
+
 
 namespace ENV_GEN {
 
@@ -21,7 +24,15 @@ namespace ENV_GEN {
 
             void init();
             void render();
+            void animate(const double deltaT);
 
+            void resize(const uint width, const uint height);
+
+            void handleInputEvents(const uint key, const uint action);
+	        void handleMousePosition(const double xpos, const double ypos);
+
+        private:
+            void _updateMVP();
         
         private:
             const std::string _shaderFolder     = "data/shaders/";
@@ -31,13 +42,17 @@ namespace ENV_GEN {
             std::vector<glm::vec4>  _vertexColor;
             std::vector<uint>       _vertexIndex;
 
-
             GLuint _idProgram   = GL_INVALID_INDEX;
+            GLuint _locMVP      = GL_INVALID_INDEX;
+
             GLuint _vao         = GL_INVALID_INDEX;
             GLuint _vbo_vertex  = GL_INVALID_INDEX;
             GLuint _vbo_color   = GL_INVALID_INDEX;
             GLuint _ebo         = GL_INVALID_INDEX;
-
+            
+            Camera _camera;
+            const float _mouseSensibility = 0.2f; 
+            float _fov; 
     };
 }
 

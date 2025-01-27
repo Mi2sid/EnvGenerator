@@ -5,8 +5,10 @@ layout (location = 1) in vec4 aVertexColor;
 
 out vec4 Color;
 
+uniform mat4 uMVPMatrix;
+
 void main() {
-    gl_Position = vec4(aPosition, 1.0);
+    gl_Position = uMVPMatrix * vec4(aPosition, 1.0);
 
     Color = aVertexColor;
 }
