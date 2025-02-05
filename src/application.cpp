@@ -23,6 +23,8 @@ namespace ENV_GEN {
         _renderer.resize( _width, _height );
         _renderer.init();
 
+        glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
         std::cout << "Application initialized." << std::endl;
     }
 
@@ -51,9 +53,11 @@ namespace ENV_GEN {
 
             _renderer.animate(deltaTime);
             _renderer.render();
-
+            
             glfwSwapBuffers(_window);
             glfwPollEvents();
+
+            std::cout << 1/deltaTime << " fps." << std::endl;
         }
 
         return 0;
@@ -102,18 +106,19 @@ namespace ENV_GEN {
     }
 
     void Application::_handleMouseButtonEvents(const uint button, const uint action, const uint mods) {
-        std::cout << "button :" << button << " action:" << action << " mods:" << mods << std::endl;
+        //std::cout << "button :" << button << " action:" << action << " mods:" << mods << std::endl;
 
         _renderer.handleInputEvents(button, action);
 
     }
 
     void Application::_handleCursorPositionEvents(const double xpos, const double ypos) {
-        std::cout << "xpos :" << xpos << " ypos:" << ypos << std::endl;
+        //std::cout << "xpos :" << xpos << " ypos:" << ypos << std::endl;
 
         _renderer.handleMousePosition( xpos - _oldx, ypos - _oldy);
-        _oldx = xpos;
-        _oldy = ypos;
+        _oldx = _width / 2.0;
+        _oldy = _height / 2.0;
+        glfwSetCursorPos(_window, _width / 2.0, _height / 2.0);
     }
 
     void Application::_handleScrollEvents(const double xoffset, const double yoffset) {

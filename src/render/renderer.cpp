@@ -2,19 +2,33 @@
 
 namespace ENV_GEN {
 
+	const std::vector<glm::vec3> GLCube::vertexPosition = {
+	    { -0.5f, -0.5f, -0.5f }, { 0.5f, -0.5f, -0.5f }, { 0.5f,  0.5f, -0.5f }, { -0.5f,  0.5f, -0.5f }, // Face arrière
+	    { -0.5f, -0.5f,  0.5f }, { 0.5f, -0.5f,  0.5f }, { 0.5f,  0.5f,  0.5f }, { -0.5f,  0.5f,  0.5f }  // Face avant
+	};
+
+	const std::vector<uint> GLCube::vertexIndex = {
+	    0, 1, 2, 2, 3, 0, // Face arrière
+	    4, 5, 6, 6, 7, 4, // Face avant
+	    4, 5, 1, 1, 0, 4, // Face bas
+	    7, 6, 2, 2, 3, 7, // Face haut
+	    4, 0, 3, 3, 7, 4, // Face gauche
+	    5, 1, 2, 2, 6, 5  // Face droite
+	};
+
     Renderer::~Renderer() {
 
 		glDeleteProgram(_idProgram);
 
-		glDeleteBuffers( 1, &_vbo_vertex );
-		glDeleteBuffers( 1, &_vbo_color );
+		glDeleteBuffers( 1, &_cubeSample.vbo_vertex );
+		glDeleteBuffers( 1, &_cubeSample.vbo_color );
 
-		glDisableVertexArrayAttrib( _vao, 0 );
-		glDisableVertexArrayAttrib( _vao, 1 );
+		glDisableVertexArrayAttrib( _cubeSample.vao, 0 );
+		glDisableVertexArrayAttrib( _cubeSample.vao, 1 );
 
-		glDeleteVertexArrays( 1, &_vao );
+		glDeleteVertexArrays( 1, &_cubeSample.vao );
 
-		glDeleteBuffers(1, &_ebo);
+		glDeleteBuffers(1, &_cubeSample.ebo);
 		glDisable( GL_DEPTH_TEST );
     }
 
@@ -81,22 +95,8 @@ namespace ENV_GEN {
 		glDeleteShader(vertexShader);
 		glDeleteShader(fragmentShader);
 
-		_vertexPosition = { { 0.5f, 0.5f, 0.5f }, { 0.5f, -0.5f, 0.5f },
-							{ -0.5f, 0.5f, 0.5f }, { -0.5f, -0.5f, 0.5f }, 
-							{ 0.5f, 0.5f, -0.5f }, { 0.5f, -0.5f, -0.5f },
-							{ -0.5f, 0.5f, -0.5f }, { -0.5f, -0.5f, -0.5f } };
-
-		for ( int i = 0; i < _vertexPosition.size() ; i++ )
-			_vertexColor.push_back( glm::vec4( static_cast<float>(std::rand()) / RAND_MAX, static_cast<float>(std::rand()) / RAND_MAX, static_cast<float>(std::rand()) / RAND_MAX, 1.f ) );
-
-		_vertexIndex = {
-			3, 0, 1, 3, 0, 2, // z+
-			7, 4, 5, 7, 4, 6, // z-
-			1, 7, 3, 1, 7, 5, // y-
-			0, 6, 2, 0, 6, 4, // y+
-			0, 5, 1, 0, 5, 4, // x+
-			2, 7, 3, 2, 7, 6, // x-
-		};
+		for ( int i = 0; i < _cubeSample.vertexPosition.size() ; i++ )
+			_cubeSample.vertexColor.push_back( glm::vec4( static_cast<float>(std::rand()) / RAND_MAX, static_cast<float>(std::rand()) / RAND_MAX, static_cast<float>(std::rand()) / RAND_MAX, 1.f ) );
 
 		_locMVP = glGetUniformLocation( _idProgram, "uMVPMatrix" );
 
@@ -104,39 +104,42 @@ namespace ENV_GEN {
 		_fov = _camera.getFov();
 		_camera.setPosition( glm::vec3( 1.f, 1.f, 4.f ) );
 		_camera.setScreenSize( 1280, 720 );
+		
+		_cubeSample.model = glm::translate( _cubeSample.model, glm::vec3( 0.f, 1.f, 0.f ) );
 		_updateMVP();
-
+		
+		
 		glUseProgram( _idProgram );
 
 		// vao
-		glCreateVertexArrays( 1, &_vao);
-		glEnableVertexArrayAttrib( _vao, 0 );
-		glEnableVertexArrayAttrib( _vao, 1 );
+		glCreateVertexArrays( 1, &_cubeSample.vao);
+		glEnableVertexArrayAttrib( _cubeSample.vao, 0 );
+		glEnableVertexArrayAttrib( _cubeSample.vao, 1 );
 
 		// vbo
-		glCreateBuffers( 1, &_vbo_vertex );
-		glNamedBufferData( _vbo_vertex, _vertexPosition.size() * sizeof( glm::vec3 ), _vertexPosition.data(), GL_STATIC_DRAW );
+		glCreateBuffers( 1, &_cubeSample.vbo_vertex );
+		glNamedBufferData( _cubeSample.vbo_vertex, GLCube::vertexPosition.size() * sizeof( glm::vec3 ), GLCube::vertexPosition.data(), GL_STATIC_DRAW );
 
 		// vao, vbo link
-		glVertexArrayVertexBuffer( _vao, 0, _vbo_vertex, 0, sizeof( glm::vec3 ) );
-		glVertexArrayAttribFormat( _vao, 0, 3, GL_FLOAT, GL_FALSE, 0 );
-		glVertexArrayAttribBinding( _vao, 0, 0 );
+		glVertexArrayVertexBuffer	( _cubeSample.vao, 0, _cubeSample.vbo_vertex, 0, sizeof( glm::vec3 ) );
+		glVertexArrayAttribFormat	( _cubeSample.vao, 0, 3, GL_FLOAT, GL_FALSE, 0 );
+		glVertexArrayAttribBinding	( _cubeSample.vao, 0, 0 );
 
 		// vbo color
-		glCreateBuffers( 1, &_vbo_color );
-		glNamedBufferData( _vbo_color, _vertexColor.size() * sizeof( glm::vec4 ), _vertexColor.data(), GL_STATIC_DRAW );
+		glCreateBuffers( 1, &_cubeSample.vbo_color );
+		glNamedBufferData( _cubeSample.vbo_color, _cubeSample.vertexColor.size() * sizeof( glm::vec4 ), _cubeSample.vertexColor.data(), GL_STATIC_DRAW );
 
 		// vao, vbo color link
-		glVertexArrayVertexBuffer( _vao, 1, _vbo_color, 0, sizeof( glm::vec4 ) );
-		glVertexArrayAttribFormat( _vao, 1, 4, GL_FLOAT, GL_FALSE, 0 );
-		glVertexArrayAttribBinding( _vao, 1, 1 );
+		glVertexArrayVertexBuffer( _cubeSample.vao, 1, _cubeSample.vbo_color, 0, sizeof( glm::vec4 ) );
+		glVertexArrayAttribFormat( _cubeSample.vao, 1, 4, GL_FLOAT, GL_FALSE, 0 );
+		glVertexArrayAttribBinding( _cubeSample.vao, 1, 1 );
 
 		// ebo
-		glCreateBuffers( 1, &_ebo );
-		glNamedBufferData( _ebo, _vertexIndex.size() * sizeof( uint ), _vertexIndex.data(), GL_STATIC_DRAW );
+		glCreateBuffers( 1, &_cubeSample.ebo );
+		glNamedBufferData( _cubeSample.ebo, GLCube::vertexIndex.size() * sizeof( uint ), GLCube::vertexIndex.data(), GL_STATIC_DRAW );
 
 		// link vao ebo
-		glVertexArrayElementBuffer( _vao, _ebo );
+		glVertexArrayElementBuffer( _cubeSample.vao, _cubeSample.ebo );
 
 		std::cout << "Renderer initilised!" << std::endl;
 
@@ -145,12 +148,23 @@ namespace ENV_GEN {
     void Renderer::render() {
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 		
-		glBindVertexArray( _vao );
+		glBindVertexArray( _cubeSample.vao );
 
-		glDrawElements( GL_TRIANGLES, (GLsizei) _vertexIndex.size(), GL_UNSIGNED_INT, 0 );
-		
 		_updateMVP();
+		glDrawElements( GL_TRIANGLES, (GLsizei) GLCube::vertexIndex.size(), GL_UNSIGNED_INT, 0 );
 		
+		glm::mat4 t = {
+            1.f, 0.f, 0.f, 0.f,
+            0.f, 1.f, 0.f, 0.f,
+            0.f, 0.f, 1.f, 0.f,
+            0.f, 0.f, 0.f, 1.f
+        };
+		glm::mat4 MVP = _camera.getProjectionMatrix() * _camera.getViewMatrix() * t;
+		glProgramUniformMatrix4fv( _idProgram, _locMVP, 1, GL_FALSE, glm::value_ptr(MVP) );
+
+		glDrawElements( GL_TRIANGLES, (GLsizei) GLCube::vertexIndex.size(), GL_UNSIGNED_INT, 0 );
+
+
 		glBindVertexArray( 0 );
     }
 
@@ -196,7 +210,7 @@ namespace ENV_GEN {
 
 	void Renderer::_updateMVP() {
 
-		glm::mat4 MVP = _camera.getProjectionMatrix() * _camera.getViewMatrix();
+		glm::mat4 MVP = _camera.getProjectionMatrix() * _camera.getViewMatrix() * _cubeSample.model;
 		glProgramUniformMatrix4fv( _idProgram, _locMVP, 1, GL_FALSE, glm::value_ptr(MVP) );
 	
 	}

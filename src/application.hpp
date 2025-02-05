@@ -74,8 +74,8 @@ namespace ENV_GEN {
 
             GLFWwindow* _window;
 
-            double _oldx = 0.f;
-            double _oldy = 0.f;
+            double _oldx = 50.0;
+            double _oldy = 50.0;
 
             Renderer _renderer;
     };
