@@ -1,7 +1,6 @@
 #include "application.hpp"
 
-
-namespace ENV_GEN {
+namespace APP {
     
     Application::Application( const std::string & title, const uint width, const uint height) :
         _title(title), _width(width), _height(height) {
@@ -46,13 +45,15 @@ namespace ENV_GEN {
 
         std::cout << "Running application." << std::endl;
 
+        _chunk = new ENV_GEN::Chunk(glm::ivec3(0, 0, 0));
+
         while (!glfwWindowShouldClose(_window)) {
             currentTime     = glfwGetTime();
             deltaTime       = currentTime - previousTime;
             previousTime    = currentTime;
 
             _renderer.animate(deltaTime);
-            _renderer.render();
+            _renderer.render(_chunk);
             
             glfwSwapBuffers(_window);
             glfwPollEvents();
@@ -72,7 +73,7 @@ namespace ENV_GEN {
 
         if (!_window) {
             glfwTerminate();
-            error(WINDOW_ERROR);
+            UTILS::error(UTILS::WINDOW_ERROR);
         }
     }
 
@@ -81,14 +82,14 @@ namespace ENV_GEN {
 
         std::cout << "Initializing GLFW." << std::endl;
 
-        if (!glfwInit()) error(GLFW_ERROR);
+        if (!glfwInit()) UTILS::error(UTILS::GLFW_ERROR);
     }
 
     void Application::_initGLEW() {
 
         std::cout << "Initializing GLEW" << std::endl;
 
-        if (glewInit() != GLEW_OK) error(GLEW_ERROR);
+        if (glewInit() != GLEW_OK) UTILS::error(UTILS::GLEW_ERROR);
 
     }
 

@@ -10,6 +10,9 @@ set(SRC_FILES
 
     src/render/renderer.cpp
     src/render/camera.cpp
+
+    src/terrain/block.cpp
+    src/terrain/chunk.cpp
 )
 
 set(HEADER_FILES
@@ -21,6 +24,9 @@ set(HEADER_FILES
 
     src/render/renderer.hpp
     src/render/camera.hpp
+
+    src/terrain/block.hpp
+    src/terrain/chunk.hpp
 )
 
 add_executable(${PROJECT_NAME} src/main.cpp ${SRC_FILES} ${HEADER_FILES})

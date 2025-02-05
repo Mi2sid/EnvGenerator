@@ -6,7 +6,7 @@
 #include <map>
 #include <iostream>
 
-namespace ENV_GEN {
+namespace UTILS {
 
     struct ErrorInfo {
         const char* code; 
@@ -27,7 +27,7 @@ namespace ENV_GEN {
         { LINK_PROGRAM_ERROR,   {"0005", "Linking program failed."} },
     };
 
-inline void error(int code, const std::string& log = "") {
+    inline void error(int code, const std::string& log = "") {
 
         auto it = ERROR_MAP.find(code);
         if (it == ERROR_MAP.end()) {

@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-namespace ENV_GEN {
+namespace RENDER {
 
     class Camera {
         public:

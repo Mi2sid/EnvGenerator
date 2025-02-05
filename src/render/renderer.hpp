@@ -13,9 +13,9 @@
 #include "utils/error.hpp"
 #include "utils/readfile.hpp"
 #include "render/camera.hpp"
+#include "terrain/chunk.hpp"
 
-
-namespace ENV_GEN {
+namespace RENDER {
 
     struct GLCube {
         static const std::vector<glm::vec3>  vertexPosition;
@@ -42,24 +42,23 @@ namespace ENV_GEN {
             ~Renderer();
 
             void init();
-            void render();
+            void render(ENV_GEN::Chunk* chunk);
             void animate(const double deltaT);
 
             void resize(const uint width, const uint height);
 
             void handleInputEvents(const uint key, const uint action);
 	        void handleMousePosition(const double xpos, const double ypos);
-
-        private:
-            void _updateMVP();
         
         private:
             const std::string _shaderFolder     = "data/shaders/";
             const glm::vec4 _backgroundColor    = glm::vec4(0.1f, 0.1f, 0.1f, 1.f);
 
-            GLuint _idProgram   = GL_INVALID_INDEX;
-            GLuint _locMVP      = GL_INVALID_INDEX;
-            
+            GLuint _idProgram       = GL_INVALID_INDEX;
+            GLuint _locMVP          = GL_INVALID_INDEX;
+            GLuint _locAtlas        = GL_INVALID_INDEX;
+            GLuint _locAtlasIndex   = GL_INVALID_INDEX;
+
             GLCube _cubeSample;
 
             Camera _camera;

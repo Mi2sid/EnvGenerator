@@ -4,7 +4,7 @@
 #include <iostream>
 
 
-namespace ENV_GEN {
+namespace APP {
 
     typedef std::uint32_t uint;
 

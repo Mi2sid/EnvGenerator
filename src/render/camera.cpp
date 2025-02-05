@@ -1,6 +1,6 @@
 #include "camera.hpp"
 
-namespace ENV_GEN {
+namespace RENDER {
 
     Camera::Camera() {
         _updateViewMatrix();

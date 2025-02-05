@@ -1,9 +1,12 @@
+#ifndef __READFILE_HPP__
+#define __READFILE_HPP__
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <string>
 
-namespace ENV_GEN {
+namespace UTILS {
 
     static inline std::string readFile(const std::string & path)
     {
@@ -16,3 +19,5 @@ namespace ENV_GEN {
         return stream.str();
     }
 }
+
+#endif // __READFILE_HPP__

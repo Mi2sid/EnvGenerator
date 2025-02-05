@@ -1,6 +1,6 @@
 #include "renderer.hpp"
 
-namespace ENV_GEN {
+namespace RENDER {
 
 	const std::vector<glm::vec3> GLCube::vertexPosition = {
 	    { -0.5f, -0.5f, -0.5f }, { 0.5f, -0.5f, -0.5f }, { 0.5f,  0.5f, -0.5f }, { -0.5f,  0.5f, -0.5f }, // Face arrière
@@ -16,15 +16,18 @@ namespace ENV_GEN {
 	    5, 1, 2, 2, 6, 5  // Face droite
 	};
 
+	static const std::vector<glm::vec4> _atlas = {
+    	glm::vec4(1.0f, 1.0f, 1.0f, 1.f),
+    	glm::vec4(0.7f, 0.7f, 0.7f, 1.f),
+    	glm::vec4(0.5f, 0.3f, 0.1f, 1.f)
+	};
+
     Renderer::~Renderer() {
 
 		glDeleteProgram(_idProgram);
 
 		glDeleteBuffers( 1, &_cubeSample.vbo_vertex );
 		glDeleteBuffers( 1, &_cubeSample.vbo_color );
-
-		glDisableVertexArrayAttrib( _cubeSample.vao, 0 );
-		glDisableVertexArrayAttrib( _cubeSample.vao, 1 );
 
 		glDeleteVertexArrays( 1, &_cubeSample.vao );
 
@@ -39,8 +42,8 @@ namespace ENV_GEN {
     
 		glEnable(GL_DEPTH_TEST);
 
-        const std::string vertShaderSource = readFile(_shaderFolder + "initialVert.glsl");
-        const std::string fragShaderSource = readFile(_shaderFolder + "initialFrag.glsl");
+        const std::string vertShaderSource = UTILS::readFile(_shaderFolder + "initialVert.glsl");
+        const std::string fragShaderSource = UTILS::readFile(_shaderFolder + "initialFrag.glsl");
 
         GLuint vertexShader     = glCreateShader(GL_VERTEX_SHADER);
         GLuint fragmentShader   = glCreateShader(GL_FRAGMENT_SHADER);
@@ -62,7 +65,7 @@ namespace ENV_GEN {
 			glGetShaderInfoLog(vertexShader, sizeof( log ), NULL, log);
 			glDeleteShader(vertexShader);
 			glDeleteShader(fragmentShader);
-            error(COMPILE_SHADER_ERROR, log);
+            UTILS::error(UTILS::COMPILE_SHADER_ERROR, log);
 		}
 
 		glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &verified);
@@ -72,7 +75,7 @@ namespace ENV_GEN {
 			glGetShaderInfoLog(fragmentShader,sizeof(log), NULL, log);
 			glDeleteShader(vertexShader);
 			glDeleteShader(fragmentShader);
-			error(COMPILE_SHADER_ERROR, log);
+			UTILS::error(UTILS::COMPILE_SHADER_ERROR, log);
 		}
 
         _idProgram = glCreateProgram();
@@ -89,7 +92,7 @@ namespace ENV_GEN {
 			glDeleteShader(vertexShader);
 			glDeleteShader(fragmentShader);
 			glGetProgramInfoLog(_idProgram, sizeof(log), NULL, log);
-			error(LINK_PROGRAM_ERROR, log);
+			UTILS::error(UTILS::LINK_PROGRAM_ERROR, log);
 		}
 
 		glDeleteShader(vertexShader);
@@ -98,18 +101,18 @@ namespace ENV_GEN {
 		for ( int i = 0; i < _cubeSample.vertexPosition.size() ; i++ )
 			_cubeSample.vertexColor.push_back( glm::vec4( static_cast<float>(std::rand()) / RAND_MAX, static_cast<float>(std::rand()) / RAND_MAX, static_cast<float>(std::rand()) / RAND_MAX, 1.f ) );
 
-		_locMVP = glGetUniformLocation( _idProgram, "uMVPMatrix" );
+		_locMVP 		= glGetUniformLocation( _idProgram, "uMVPMatrix" );
+		_locAtlas 		= glGetUniformLocation( _idProgram, "uAtlas" );
+		_locAtlasIndex	= glGetUniformLocation( _idProgram, "uAtlasIndex" );
 
 		// camera
 		_fov = _camera.getFov();
 		_camera.setPosition( glm::vec3( 1.f, 1.f, 4.f ) );
 		_camera.setScreenSize( 1280, 720 );
-		
-		_cubeSample.model = glm::translate( _cubeSample.model, glm::vec3( 0.f, 1.f, 0.f ) );
-		_updateMVP();
-		
-		
+				
 		glUseProgram( _idProgram );
+
+		glUniform4fv(_locAtlas, _atlas.size(), &_atlas[0][0]);
 
 		// vao
 		glCreateVertexArrays( 1, &_cubeSample.vao);
@@ -145,25 +148,24 @@ namespace ENV_GEN {
 
     }
 
-    void Renderer::render() {
+    void Renderer::render(ENV_GEN::Chunk* chunk) {
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 		
 		glBindVertexArray( _cubeSample.vao );
 
-		_updateMVP();
-		glDrawElements( GL_TRIANGLES, (GLsizei) GLCube::vertexIndex.size(), GL_UNSIGNED_INT, 0 );
-		
-		glm::mat4 t = {
-            1.f, 0.f, 0.f, 0.f,
-            0.f, 1.f, 0.f, 0.f,
-            0.f, 0.f, 1.f, 0.f,
-            0.f, 0.f, 0.f, 1.f
-        };
-		glm::mat4 MVP = _camera.getProjectionMatrix() * _camera.getViewMatrix() * t;
-		glProgramUniformMatrix4fv( _idProgram, _locMVP, 1, GL_FALSE, glm::value_ptr(MVP) );
+		glm::mat4 VP = _camera.getProjectionMatrix() * _camera.getViewMatrix();
+		glm::mat4 MVP;
 
-		glDrawElements( GL_TRIANGLES, (GLsizei) GLCube::vertexIndex.size(), GL_UNSIGNED_INT, 0 );
-
+		for(int x=0; x<ENV_GEN::CHUNK_SIZE; x++)
+			for(int y=0; y<ENV_GEN::CHUNK_SIZE; y++)
+				for(int z=0; z<ENV_GEN::CHUNK_SIZE; z++){
+					if(chunk->_data[x][y][z]._type != 0) {
+						MVP = VP * chunk->_data[x][y][z]._position;
+						glProgramUniform1i(_idProgram, _locAtlasIndex, chunk->_data[x][y][z]._type);
+						glProgramUniformMatrix4fv( _idProgram, _locMVP, 1, GL_FALSE, glm::value_ptr(MVP) );
+						glDrawElements( GL_TRIANGLES, (GLsizei) GLCube::vertexIndex.size(), GL_UNSIGNED_INT, 0 );
+					}
+				}
 
 		glBindVertexArray( 0 );
     }
@@ -206,12 +208,5 @@ namespace ENV_GEN {
 	
 	void Renderer::resize( const uint width, const uint height ) {
 		glViewport( 0, 0, width, height );
-	}
-
-	void Renderer::_updateMVP() {
-
-		glm::mat4 MVP = _camera.getProjectionMatrix() * _camera.getViewMatrix() * _cubeSample.model;
-		glProgramUniformMatrix4fv( _idProgram, _locMVP, 1, GL_FALSE, glm::value_ptr(MVP) );
-	
 	}
 }

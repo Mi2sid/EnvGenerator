@@ -1,7 +1,9 @@
 #include <iostream>
+#include <filesystem>
+
 #include "application.hpp"
 #include "define.hpp"
-#include <filesystem>
+
 int main(){
 
     const std::string title = "Environnement générator";
@@ -10,7 +12,7 @@ int main(){
 
     try {
         
-        ENV_GEN::Application app(title, width, height);
+        APP::Application app(title, width, height);
 		return app.run();
 
     } catch ( const std::exception & e ) {

@@ -7,7 +7,10 @@
 #include "utils/error.hpp"
 #include "render/renderer.hpp"
 
-namespace ENV_GEN {
+#include "terrain/chunk.hpp"
+#include "terrain/block.hpp"
+
+namespace APP {
     class Application {
 
         public: 
@@ -67,6 +70,8 @@ namespace ENV_GEN {
     }
         private:
 
+            ENV_GEN::Chunk* _chunk;
+
             const std::string _title;
 
             uint _width;
@@ -77,7 +82,7 @@ namespace ENV_GEN {
             double _oldx = 50.0;
             double _oldy = 50.0;
 
-            Renderer _renderer;
+            RENDER::Renderer _renderer;
     };
 }
 
