@@ -13,6 +13,8 @@ set(SRC_FILES
 
     src/terrain/block.cpp
     src/terrain/chunk.cpp
+
+    src/entity/player.cpp
 )
 
 set(HEADER_FILES
@@ -27,6 +29,9 @@ set(HEADER_FILES
 
     src/terrain/block.hpp
     src/terrain/chunk.hpp
+
+    src/entity/base_entity.hpp
+    src/entity/player.hpp
 )
 
 add_executable(${PROJECT_NAME} src/main.cpp ${SRC_FILES} ${HEADER_FILES})

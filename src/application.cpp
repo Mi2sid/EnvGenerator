@@ -46,14 +46,15 @@ namespace APP {
         std::cout << "Running application." << std::endl;
 
         _chunk = new ENV_GEN::Chunk(glm::ivec3(0, 0, 0));
+        _player = new ENTITY::Player(glm::vec3(0.f, 7.f, 0.f));
 
         while (!glfwWindowShouldClose(_window)) {
             currentTime     = glfwGetTime();
             deltaTime       = currentTime - previousTime;
             previousTime    = currentTime;
 
-            _renderer.animate(deltaTime);
-            _renderer.render(_chunk);
+            _renderer.animate(deltaTime, _player);
+            _renderer.render(_chunk, _player);
             
             glfwSwapBuffers(_window);
             glfwPollEvents();

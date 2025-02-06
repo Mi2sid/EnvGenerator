@@ -14,6 +14,7 @@
 #include "utils/readfile.hpp"
 #include "render/camera.hpp"
 #include "terrain/chunk.hpp"
+#include "entity/player.hpp"
 
 namespace RENDER {
 
@@ -42,8 +43,8 @@ namespace RENDER {
             ~Renderer();
 
             void init();
-            void render(ENV_GEN::Chunk* chunk);
-            void animate(const double deltaT);
+            void render(ENV_GEN::Chunk* chunk, ENTITY::Player* player);
+            void animate(const double deltaT, ENTITY::Player* player);
 
             void resize(const uint width, const uint height);
 

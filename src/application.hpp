@@ -10,6 +10,8 @@
 #include "terrain/chunk.hpp"
 #include "terrain/block.hpp"
 
+#include "entity/player.hpp"
+
 namespace APP {
     class Application {
 
@@ -71,6 +73,7 @@ namespace APP {
         private:
 
             ENV_GEN::Chunk* _chunk;
+            ENTITY::Player* _player;
 
             const std::string _title;
 

@@ -148,7 +148,7 @@ namespace RENDER {
 
     }
 
-    void Renderer::render(ENV_GEN::Chunk* chunk) {
+    void Renderer::render(ENV_GEN::Chunk* chunk, ENTITY::Player* player) {
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 		
 		glBindVertexArray( _cubeSample.vao );
@@ -166,12 +166,21 @@ namespace RENDER {
 						glDrawElements( GL_TRIANGLES, (GLsizei) GLCube::vertexIndex.size(), GL_UNSIGNED_INT, 0 );
 					}
 				}
-
+		MVP = VP * glm::scale(glm::translate({
+			1.f, 0.f, 0.f, 0.f,
+			0.f, 1.f, 0.f, 0.f,
+			0.f, 0.f, 1.f, 0.f,
+			0.f, 0.f, 0.f, 1.f	
+		}, player->getPosition() + glm::vec3(0.f, (player->getSize().y  - 1.f) / 2.f, 0.f) ), player->getSize());
+		glProgramUniform1i(_idProgram, _locAtlasIndex, 0);
+		glProgramUniformMatrix4fv( _idProgram, _locMVP, 1, GL_FALSE, glm::value_ptr(MVP) );
+		glDrawElements( GL_TRIANGLES, (GLsizei) GLCube::vertexIndex.size(), GL_UNSIGNED_INT, 0 );
+		
 		glBindVertexArray( 0 );
     }
 
-	void Renderer::animate(const double deltaT){
-
+	void Renderer::animate(const double deltaT, ENTITY::Player* player){
+		player->applyForces();
 	}
 
 	void Renderer::handleInputEvents(const uint key, const uint action){

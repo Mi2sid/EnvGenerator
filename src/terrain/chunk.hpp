@@ -9,7 +9,7 @@
 
 namespace ENV_GEN {
     
-    constexpr uint CHUNK_SIZE = 10; 
+    constexpr uint CHUNK_SIZE = 16; 
     using Grid = std::array<std::array<std::array<Block, CHUNK_SIZE>, CHUNK_SIZE>, CHUNK_SIZE>;
 
     class Chunk {
